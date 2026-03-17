@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-config
+  namespace: rag-system
+data:
+  # LLM Configuration
+  LLM_PROVIDER: "clova_studio"
+  LLM_MODEL: "HCX-007"
+  LLM_TEMPERATURE: "0.5"
+  LLM_MAX_TOKENS: "4096"
+
+  # Embedding Configuration
+  EMBEDDING_MODEL: "intfloat/multilingual-e5-large"
+  EMBEDDING_DIMENSION: "1024"
+  EMBEDDING_BATCH_SIZE: "32"
+  EMBEDDING_SERVICE_URL: "http://embedding-service:8001"
+
+  # Qdrant Configuration
+  QDRANT_HOST: "qdrant"
+  QDRANT_PORT: "6333"
+  QDRANT_COLLECTION: "documents"
+
+  # Redis Configuration
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+
+  # RAG Configuration
+  RAG_RETRIEVAL_K: "5"
+  RAG_RERANK_TOP_N: "3"
+  RAG_MIN_QUALITY_SCORE: "0.6"
+
+  # Service URLs
+  LLM_GATEWAY_URL: "http://llm-gateway:8002"
+  RAG_API_URL: "http://rag-api:8000"
+
+  # Logging
+  LOG_LEVEL: "INFO"

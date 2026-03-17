@@ -1,0 +1,43 @@
+---
+# HTTPRoute for RAG System namespace
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: rag-route
+  namespace: rag-system
+spec:
+  parentRefs:
+    - name: main-gateway
+      namespace: kube-system
+  rules:
+    # RAG Web UI - /rag/* → web-ui:80
+    # URL Rewrite: /rag/index.html → /index.html
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /rag
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: web-ui
+          port: 80
+
+    # RAG API - /api/* → rag-api:8000
+    # URL Rewrite: /api/health → /health, /api/v1/query → /v1/query
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: rag-api
+          port: 8000

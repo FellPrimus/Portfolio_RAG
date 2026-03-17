@@ -1,0 +1,105 @@
+---
+# PersistentVolumeClaim for DevLog posts
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: devlog-data
+  namespace: portfolio
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Secret for admin credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: portfolio-secrets
+  namespace: portfolio
+type: Opaque
+stringData:
+  ADMIN_PASSWORD: "your_admin_password_here"
+  JWT_SECRET: "your_jwt_secret_here"
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portfolio-api
+  namespace: portfolio
+  labels:
+    app: portfolio-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: portfolio-api
+  template:
+    metadata:
+      labels:
+        app: portfolio-api
+    spec:
+      containers:
+        - name: portfolio-api
+          image: portfolio-api:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: DATA_DIR
+              value: "/data/posts"
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: portfolio-secrets
+                  key: ADMIN_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: portfolio-secrets
+                  key: JWT_SECRET
+          volumeMounts:
+            - name: devlog-data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: devlog-data
+          persistentVolumeClaim:
+            claimName: devlog-data
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: portfolio-api
+  namespace: portfolio
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+  selector:
+    app: portfolio-api

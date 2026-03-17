@@ -1,0 +1,38 @@
+---
+# Middleware to strip /devlog prefix for API calls
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: devlog-api-strip
+  namespace: portfolio
+spec:
+  stripPrefix:
+    prefixes:
+      - /devlog
+---
+# IngressRoute for Portfolio
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: portfolio-ingressroute
+  namespace: portfolio
+spec:
+  entryPoints:
+    - web
+  routes:
+    # DevLog API routes (priority 100 - 높음)
+    - kind: Rule
+      match: PathPrefix(`/devlog/api`)
+      priority: 100
+      middlewares:
+        - name: devlog-api-strip
+      services:
+        - name: portfolio-api
+          port: 8080
+    # Static portfolio (priority 1 - 낮음)
+    - kind: Rule
+      match: PathPrefix(`/`)
+      priority: 1
+      services:
+        - name: portfolio
+          port: 80

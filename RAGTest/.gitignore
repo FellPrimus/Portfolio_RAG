@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment
+.env
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project specific
+uploads/*
+!uploads/.gitkeep
+html/*
+!html/.gitkeep
+data/faiss_*/
+data/feedback/
+data/cache/
+*.log
+
+# Temporary and backup files
+*_backup.py
+*_old.py
+fix_*.py
+nul
+*.tmp
+
+# Test files (exclude from repo)
+test_*.py
+test_*.json
+
+# Documentation (keep only essential)
+repomix-output.xml
+*_SUMMARY.md
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Virtual environments
+venv/
+venv_*/
+ENV/
+env/

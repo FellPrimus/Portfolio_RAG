@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Post - youngmin's Cloud</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/blog.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Marked.js for preview -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body class="admin-body">
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="container admin-header-content">
+            <h1 class="admin-title">
+                <a href="/admin/">DevLog Admin</a>
+                <span class="header-separator">/</span>
+                <span id="page-title">New Post</span>
+            </h1>
+            <div class="admin-actions">
+                <a href="/admin/" class="btn btn-outline btn-sm">Cancel</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="admin-main editor-main">
+        <div class="container">
+            <form id="post-form" class="post-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            placeholder="Post title"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tags">Tags (comma separated)</label>
+                        <input
+                            type="text"
+                            id="tags"
+                            name="tags"
+                            placeholder="Kubernetes, DevOps, SRE"
+                        >
+                    </div>
+                </div>
+
+                <div class="editor-container">
+                    <div class="editor-toolbar">
+                        <button type="button" class="toolbar-btn" onclick="insertMarkdown('**', '**')" title="Bold">B</button>
+                        <button type="button" class="toolbar-btn" onclick="insertMarkdown('*', '*')" title="Italic">I</button>
+                        <button type="button" class="toolbar-btn" onclick="insertMarkdown('`', '`')" title="Code">&lt;/&gt;</button>
+                        <button type="button" class="toolbar-btn" onclick="insertMarkdown('\n```\n', '\n```\n')" title="Code Block">{ }</button>
+                        <button type="button" class="toolbar-btn" onclick="insertMarkdown('## ', '')" title="Heading">H2</button>
+                        <button type="button" class="toolbar-btn" onclick="insertMarkdown('### ', '')" title="Heading">H3</button>
+                        <button type="button" class="toolbar-btn" onclick="insertMarkdown('- ', '')" title="List">List</button>
+                        <button type="button" class="toolbar-btn" onclick="insertMarkdown('[', '](url)')" title="Link">Link</button>
+                        <button type="button" class="toolbar-btn" onclick="insertMarkdown('> ', '')" title="Quote">Quote</button>
+                        <div class="toolbar-separator"></div>
+                        <button type="button" class="toolbar-btn toolbar-btn-image" onclick="document.getElementById('image-upload-input').click()" title="Upload Image">&#128247; Image</button>
+                        <input type="file" id="image-upload-input" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none" onchange="handleImageUpload(this)">
+                        <span class="upload-status" id="upload-status"></span>
+                        <div class="toolbar-spacer"></div>
+                        <button type="button" class="toolbar-btn toggle-preview" onclick="togglePreview()" title="Toggle Preview">Preview</button>
+                    </div>
+
+                    <div class="editor-panels">
+                        <div class="editor-panel">
+                            <textarea
+                                id="content"
+                                name="content"
+                                placeholder="Write your post content in Markdown..."
+                                required
+                            ></textarea>
+                        </div>
+                        <div class="preview-panel" id="preview-panel" style="display: none;">
+                            <div class="preview-content" id="preview-content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row form-actions">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="published" name="published" checked>
+                        <span>Publish immediately</span>
+                    </label>
+
+                    <div class="action-buttons">
+                        <a href="/admin/" class="btn btn-outline">Cancel</a>
+                        <button type="submit" class="btn btn-primary" id="submit-btn">
+                            Save Post
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = '/devlog/api';
+        let token = localStorage.getItem('admin_token');
+        let postId = null;
+        let isPreviewMode = false;
+
+        // Check authentication
+        if (!token) {
+            window.location.href = '/admin/login.html';
+        }
+
+        // Configure marked
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true,
+            gfm: true
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check for edit mode
+            const urlParams = new URLSearchParams(window.location.search);
+            postId = urlParams.get('id');
+
+            if (postId) {
+                document.getElementById('page-title').textContent = 'Edit Post';
+                document.title = 'Edit Post - DevLog Admin';
+                await loadPost(postId);
+            }
+
+            // Setup auto-preview update
+            document.getElementById('content').addEventListener('input', updatePreview);
+        });
+
+        // Load existing post for editing
+        async function loadPost(id) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/posts/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/admin/login.html';
+                        return;
+                    }
+                    throw new Error('Post not found');
+                }
+
+                const post = await response.json();
+
+                document.getElementById('title').value = post.title;
+                document.getElementById('tags').value = post.tags.join(', ');
+                document.getElementById('content').value = post.content;
+                document.getElementById('published').checked = post.published;
+
+            } catch (error) {
+                alert('Failed to load post: ' + error.message);
+                window.location.href = '/admin/';
+            }
+        }
+
+        // Save post
+        document.getElementById('post-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            const data = {
+                title: document.getElementById('title').value,
+                content: document.getElementById('content').value,
+                tags: document.getElementById('tags').value
+                    .split(',')
+                    .map(t => t.trim())
+                    .filter(t => t),
+                published: document.getElementById('published').checked
+            };
+
+            try {
+                const url = postId
+                    ? `${API_BASE}/admin/posts/${postId}`
+                    : `${API_BASE}/admin/posts`;
+
+                const response = await fetch(url, {
+                    method: postId ? 'PUT' : 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/admin/login.html';
+                        return;
+                    }
+                    throw new Error('Failed to save post');
+                }
+
+                window.location.href = '/admin/';
+
+            } catch (error) {
+                alert('Failed to save: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Post';
+            }
+        });
+
+        // Image upload — core logic (file input & paste 공용)
+        async function uploadImageFile(file) {
+            const status = document.getElementById('upload-status');
+            status.textContent = '업로드 중...';
+            status.className = 'upload-status uploading';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/images`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.detail || '업로드 실패');
+                }
+
+                const data = await response.json();
+                const altText = (file.name || 'image').replace(/\.[^.]+$/, '');
+                insertMarkdown(`![${altText}](${data.url})`, '');
+
+                status.textContent = '✓ 업로드 완료';
+                status.className = 'upload-status upload-ok';
+                setTimeout(() => { status.textContent = ''; status.className = 'upload-status'; }, 3000);
+
+            } catch (error) {
+                status.textContent = '✗ ' + error.message;
+                status.className = 'upload-status upload-error';
+                setTimeout(() => { status.textContent = ''; status.className = 'upload-status'; }, 4000);
+            }
+        }
+
+        // 파일 선택 버튼 핸들러
+        function handleImageUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            uploadImageFile(file);
+            input.value = '';
+        }
+
+        // 클립보드 붙여넣기 (Ctrl+V)
+        document.getElementById('content').addEventListener('paste', (e) => {
+            const items = e.clipboardData && e.clipboardData.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) uploadImageFile(file);
+                    return;
+                }
+            }
+            // 이미지가 없으면 기본 붙여넣기 동작 유지
+        });
+
+        // Markdown helpers
+        function insertMarkdown(before, after) {
+            const textarea = document.getElementById('content');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const selectedText = text.substring(start, end);
+
+            textarea.value = text.substring(0, start) + before + selectedText + after + text.substring(end);
+
+            // Set cursor position
+            const newPos = start + before.length + selectedText.length;
+            textarea.focus();
+            textarea.setSelectionRange(newPos, newPos);
+
+            updatePreview();
+        }
+
+        // Preview toggle
+        function togglePreview() {
+            isPreviewMode = !isPreviewMode;
+            const previewPanel = document.getElementById('preview-panel');
+            const editorPanel = document.querySelector('.editor-panel');
+            const toggleBtn = document.querySelector('.toggle-preview');
+
+            if (isPreviewMode) {
+                updatePreview();
+                previewPanel.style.display = 'block';
+                editorPanel.classList.add('with-preview');
+                toggleBtn.classList.add('active');
+            } else {
+                previewPanel.style.display = 'none';
+                editorPanel.classList.remove('with-preview');
+                toggleBtn.classList.remove('active');
+            }
+        }
+
+        // Update preview
+        function updatePreview() {
+            if (!isPreviewMode) return;
+
+            const content = document.getElementById('content').value;
+            const previewContent = document.getElementById('preview-content');
+            previewContent.innerHTML = marked.parse(content);
+
+            // Apply syntax highlighting
+            previewContent.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        }
+    </script>
+</body>
+</html>

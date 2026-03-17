@@ -1,0 +1,79 @@
+// ===================================================================
+// 문서 준비 탭 모듈
+// 파일 업로드, 벡터DB 저장 통합
+// ===================================================================
+
+import {
+    handleFileUpload,
+    loadFileList,
+    selectAllFiles,
+    clearAllFiles,
+    processFiles,
+    setDocumentsLoadCallback
+} from './upload.js';
+
+import { initTextInput } from './text-input.js';
+
+/**
+ * 문서 준비 탭 초기화
+ */
+export function initDocumentPrepareTab() {
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const loadFilesBtn = document.getElementById('load-files-btn');
+    const selectAllBtn = document.getElementById('select-all-btn');
+    const clearAllBtn = document.getElementById('clear-all-btn');
+    const processBtn = document.getElementById('process-btn');
+
+    // 드래그 앤 드롭
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+    uploadArea.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = Array.from(e.dataTransfer.files);
+        await handleFileUpload(files);
+    });
+
+    // 파일 선택
+    fileInput.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files);
+        await handleFileUpload(files);
+    });
+
+    // 저장된 파일에서 선택
+    loadFilesBtn.addEventListener('click', loadFileList);
+
+    // 모두 선택/해제
+    selectAllBtn.addEventListener('click', selectAllFiles);
+    clearAllBtn.addEventListener('click', clearAllFiles);
+
+    // 벡터DB에 저장
+    processBtn.addEventListener('click', processFiles);
+
+    // 텍스트 직접 입력 초기화
+    initTextInput();
+}
+
+/**
+ * 문서 로드 콜백 설정
+ * @param {Function} callback - 문서 로드 시 호출될 콜백
+ */
+export function setPrepareDocumentsLoadCallback(callback) {
+    setDocumentsLoadCallback(callback);
+}
+
+// Re-export for direct access
+export {
+    handleFileUpload,
+    loadFileList,
+    selectAllFiles,
+    clearAllFiles,
+    processFiles
+};

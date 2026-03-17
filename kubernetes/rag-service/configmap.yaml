@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-service-config
+  namespace: portfolio
+  labels:
+    app: rag-service
+data:
+  # Flask
+  FLASK_ENV: "production"
+  FLASK_DEBUG: "false"
+  HOST: "0.0.0.0"
+  PORT: "5000"
+  DEBUG: "false"
+
+  # LLM Provider (AI API Channel)
+  LLM_PROVIDER: "openai"
+  MODEL_NAME: "gpt-5.2"
+
+  # Embedding
+  EMBEDDING_PROVIDER: "qwen"
+  EMBEDDING_MODEL: "Qwen3-Embedding-8B"
+  EMBEDDING_MODEL_NAME: "Qwen3-Embedding-8B"
+  EMBEDDING_DIMENSION: "384"
+  EMBEDDING_BATCH_SIZE: "32"
+  QWEN_API_BASE_URL: "https://namc-aigw.io.naver.com"
+  EMBEDDING_QWEN_BASE_URL: "https://namc-aigw.io.naver.com"
+
+  # Vector Store
+  VECTOR_STORE_TYPE: "faiss"
+  FAISS_PERSIST_DIRECTORY: "/app/data/faiss_web"
+
+  # Chunking (Qwen3 optimized)
+  CHUNKING_DEFAULT_CHUNK_SIZE: "1500"
+  CHUNKING_DEFAULT_CHUNK_OVERLAP: "300"
+  CHUNKING_MIN_CHUNK_SIZE: "200"
+  CHUNKING_MAX_CHUNK_SIZE: "3000"
+  CHUNKING_HTML_CHUNK_SIZE: "2000"
+  CHUNKING_PDF_CHUNK_SIZE: "1200"
+  CHUNKING_EXCEL_CHUNK_SIZE: "500"
+
+  # RAG Pipeline
+  RAG_RETRIEVAL_K: "5"
+  RAG_RERANK_TOP_N: "3"
+  RAG_MAX_RETRIES: "2"
+  RAG_MIN_QUALITY_SCORE: "0.6"
+  RAG_QUALITY_WEIGHT_LENGTH: "0.2"
+  RAG_QUALITY_WEIGHT_GROUNDING: "0.4"
+  RAG_QUALITY_WEIGHT_DIRECTNESS: "0.2"
+  RAG_QUALITY_WEIGHT_RELEVANCE: "0.2"
+  RAG_MIN_ANSWER_LENGTH: "200"
+
+  # LLM Settings
+  LLM_TEMPERATURE: "0.2"
+  LLM_CREATIVE_TEMPERATURE: "0.5"
+  LLM_MAX_TOKENS: "2048"
+  LLM_PROMPT_STRATEGY: "balanced"
+
+  # Crawling
+  CRAWL_TIMEOUT: "60000"
+  CRAWL_WAIT_TIME: "2000"
+  CRAWL_VIEWPORT_WIDTH: "1280"
+  CRAWL_VIEWPORT_HEIGHT: "800"
+  CRAWL_HEADLESS: "true"
+
+  # Streaming
+  STREAM_CHUNK_SIZE: "3"
+  STREAM_DELAY: "0.01"
+  STREAM_PREVIEW_LENGTH: "200"
+
+  # Paths
+  PATH_DATA_DIR: "/app/data"
+  PATH_FAISS_DIR: "/app/data/faiss_web"
+  PATH_FEEDBACK_DIR: "/app/data/feedback"
+  PATH_HTML_DIR: "/app/html"
+  PATH_DOCUMENTS_DIR: "/app/uploads"
+
+  # Web Search (disabled by default)
+  WEB_SEARCH_ENABLED: "false"
+  WEB_SEARCH_MAX_RESULTS: "3"
+  WEB_SEARCH_SEARCH_DEPTH: "basic"
+
+  # Parallelism (prevent segfaults)
+  TOKENIZERS_PARALLELISM: "false"
+  OMP_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"

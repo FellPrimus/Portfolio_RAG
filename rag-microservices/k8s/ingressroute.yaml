@@ -1,0 +1,60 @@
+---
+# /rag → /rag/ 트레일링 슬래시 리다이렉트
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: rag-slash-redirect
+  namespace: rag-system
+spec:
+  redirectRegex:
+    regex: "^(.*)/rag$"
+    replacement: "${1}/rag/"
+    permanent: false
+---
+# /rag prefix 제거 미들웨어
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: rag-strip-prefix
+  namespace: rag-system
+spec:
+  stripPrefix:
+    prefixes:
+      - /rag
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: rag-ingressroute
+  namespace: rag-system
+spec:
+  entryPoints:
+    - web
+  routes:
+    # /rag (슬래시 없음) → /rag/ 리다이렉트 (최고 우선순위)
+    - kind: Rule
+      match: Path(`/rag`)
+      priority: 120
+      middlewares:
+        - name: rag-slash-redirect
+      services:
+        - name: web-ui
+          port: 80
+    # API 경로 (priority 110)
+    - kind: Rule
+      match: PathPrefix(`/rag/api`)
+      priority: 110
+      middlewares:
+        - name: rag-strip-prefix
+      services:
+        - name: rag-api
+          port: 8000
+    # Web UI (priority 100)
+    - kind: Rule
+      match: PathPrefix(`/rag`)
+      priority: 100
+      middlewares:
+        - name: rag-strip-prefix
+      services:
+        - name: web-ui
+          port: 80

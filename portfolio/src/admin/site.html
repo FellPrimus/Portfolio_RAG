@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Settings - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/blog.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="container admin-header-content">
+            <div class="admin-header-left">
+                <h1 class="admin-title">DevLog Admin</h1>
+                <nav class="admin-nav-tabs">
+                    <a href="/admin/" class="admin-tab">Posts</a>
+                    <a href="/admin/site.html" class="admin-tab active">Site Settings</a>
+                </nav>
+            </div>
+            <div class="admin-actions">
+                <a href="/" class="btn btn-outline btn-sm">View Site</a>
+                <button id="logout-btn" class="btn btn-secondary btn-sm">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <div class="container">
+
+            <!-- Profile Section -->
+            <div class="settings-section">
+                <h2 class="settings-section-title">프로필</h2>
+                <div class="settings-field">
+                    <label for="profile-name">이름</label>
+                    <input type="text" id="profile-name" placeholder="Youngmin">
+                </div>
+                <div class="settings-field">
+                    <label for="profile-role">직함</label>
+                    <input type="text" id="profile-role" placeholder="DevOps / SRE Engineer">
+                </div>
+                <div class="settings-field">
+                    <label for="profile-bio">소개글</label>
+                    <textarea id="profile-bio" rows="3" placeholder="자기소개를 입력하세요"></textarea>
+                </div>
+                <div class="settings-field">
+                    <label for="profile-avatar">아바타 URL</label>
+                    <input type="text" id="profile-avatar" placeholder="/assets/images/증명.jpg">
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <button class="btn btn-primary section-save-btn" onclick="saveProfile()">Save Profile</button>
+                    <span class="save-toast" id="toast-profile">&#10003; Saved!</span>
+                </div>
+            </div>
+
+            <!-- Tech Stack Section -->
+            <div class="settings-section">
+                <h2 class="settings-section-title">Tech Stack</h2>
+                <div class="tag-editor" id="tech-tag-list"></div>
+                <div class="tag-add-form">
+                    <input type="text" id="new-tech-tag" placeholder="새 태그 추가">
+                    <button class="btn btn-outline btn-sm" onclick="addTechTag()">Add</button>
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <button class="btn btn-primary section-save-btn" onclick="saveTechStack()">Save Tech Stack</button>
+                    <span class="save-toast" id="toast-tech">&#10003; Saved!</span>
+                </div>
+            </div>
+
+            <!-- Certifications Section -->
+            <div class="settings-section">
+                <h2 class="settings-section-title">Certifications</h2>
+                <div id="cert-list"></div>
+                <div class="cert-add-row">
+                    <input type="text" id="new-cert-name" placeholder="자격증 이름 (예: CKA)">
+                    <input type="text" id="new-cert-issuer" placeholder="발급기관 (예: CNCF)">
+                    <input type="text" id="new-cert-date" placeholder="취득일 (예: 2024-03)">
+                    <input type="color" class="color-input" id="new-cert-color" value="#3b82f6">
+                    <button class="btn btn-outline btn-sm" onclick="addCert()">Add</button>
+                </div>
+                <div style="display:flex; align-items:center; margin-top:16px;">
+                    <button class="btn btn-primary" onclick="saveCerts()">Save Certifications</button>
+                    <span class="save-toast" id="toast-certs">&#10003; Saved!</span>
+                </div>
+            </div>
+
+            <!-- Featured Project Section -->
+            <div class="settings-section">
+                <h2 class="settings-section-title">Featured Project</h2>
+                <div class="settings-field">
+                    <label for="project-badge">배지 텍스트</label>
+                    <input type="text" id="project-badge" placeholder="Live Demo">
+                </div>
+                <div class="settings-field">
+                    <label for="project-title">제목</label>
+                    <input type="text" id="project-title" placeholder="프로젝트 제목">
+                </div>
+                <div class="settings-field">
+                    <label for="project-description">설명</label>
+                    <textarea id="project-description" rows="4" placeholder="프로젝트 설명"></textarea>
+                </div>
+                <div class="settings-field">
+                    <label>기술 태그</label>
+                    <div class="tag-editor" id="project-tag-list"></div>
+                    <div class="tag-add-form">
+                        <input type="text" id="new-project-tag" placeholder="새 태그 추가">
+                        <button class="btn btn-outline btn-sm" onclick="addProjectTag()">Add</button>
+                    </div>
+                </div>
+                <div class="settings-field">
+                    <label for="project-demo-link">데모 링크</label>
+                    <input type="text" id="project-demo-link" placeholder="/rag">
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <button class="btn btn-primary section-save-btn" onclick="saveProject()">Save Project</button>
+                    <span class="save-toast" id="toast-project">&#10003; Saved!</span>
+                </div>
+            </div>
+
+            <!-- Site Info / Footer Section -->
+            <div class="settings-section">
+                <h2 class="settings-section-title">사이트 정보 / 푸터</h2>
+                <div class="settings-field">
+                    <label for="site-title">사이트 제목</label>
+                    <input type="text" id="site-title" placeholder="youngmin's Cloud">
+                </div>
+                <div class="settings-field">
+                    <label for="site-subtitle">사이트 부제목</label>
+                    <input type="text" id="site-subtitle" placeholder="DevOps & Cloud Engineering Blog">
+                </div>
+                <div class="settings-field">
+                    <label for="footer-copyright">저작권 텍스트</label>
+                    <input type="text" id="footer-copyright" placeholder="© 2025 youngmin's Cloud. Powered by Kubernetes.">
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <button class="btn btn-primary section-save-btn" onclick="saveSiteInfo()">Save Site Info</button>
+                    <span class="save-toast" id="toast-site">&#10003; Saved!</span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = '/devlog/api';
+        let token = localStorage.getItem('admin_token');
+        let siteContent = null;
+
+        if (!token) {
+            window.location.href = '/admin/login.html';
+        }
+
+        // ============ Init ============
+
+        async function init() {
+            try {
+                const res = await fetch(`${API_BASE}/admin/site-content`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.status === 401) {
+                    localStorage.removeItem('admin_token');
+                    window.location.href = '/admin/login.html';
+                    return;
+                }
+                if (!res.ok) throw new Error('Failed to load');
+                siteContent = await res.json();
+                populateForms();
+            } catch (e) {
+                console.error('Error loading site content:', e);
+                alert('사이트 콘텐츠를 불러올 수 없습니다.');
+            }
+        }
+
+        function populateForms() {
+            const sc = siteContent;
+
+            // Profile
+            document.getElementById('profile-name').value = sc.profile.name;
+            document.getElementById('profile-role').value = sc.profile.role;
+            document.getElementById('profile-bio').value = sc.profile.bio;
+            document.getElementById('profile-avatar').value = sc.profile.avatar_url;
+
+            // Tech Stack
+            renderTechTags(sc.tech_stack);
+
+            // Certifications
+            renderCerts(sc.certifications || []);
+
+            // Featured Project
+            document.getElementById('project-badge').value = sc.featured_project.badge;
+            document.getElementById('project-title').value = sc.featured_project.title;
+            document.getElementById('project-description').value = sc.featured_project.description;
+            document.getElementById('project-demo-link').value = sc.featured_project.demo_link;
+            renderProjectTags(sc.featured_project.tech_tags);
+
+            // Site / Footer
+            document.getElementById('site-title').value = sc.site.title;
+            document.getElementById('site-subtitle').value = sc.site.subtitle;
+            document.getElementById('footer-copyright').value = sc.footer.copyright;
+        }
+
+        // ============ Tech Stack ============
+
+        function renderTechTags(tags) {
+            const el = document.getElementById('tech-tag-list');
+            el.innerHTML = tags.map((t, i) => `
+                <span class="tag-item">
+                    ${escapeHtml(t)}
+                    <button class="tag-remove-btn" onclick="removeTechTag(${i})" title="삭제">&times;</button>
+                </span>
+            `).join('');
+        }
+
+        function addTechTag() {
+            const input = document.getElementById('new-tech-tag');
+            const val = input.value.trim();
+            if (!val) return;
+            siteContent.tech_stack.push(val);
+            renderTechTags(siteContent.tech_stack);
+            input.value = '';
+        }
+
+        function removeTechTag(index) {
+            siteContent.tech_stack.splice(index, 1);
+            renderTechTags(siteContent.tech_stack);
+        }
+
+        document.getElementById('new-tech-tag').addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); addTechTag(); }
+        });
+
+        // ============ Certifications ============
+
+        function renderCerts(certs) {
+            const el = document.getElementById('cert-list');
+            if (certs.length === 0) {
+                el.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem;">아직 등록된 자격증이 없습니다.</p>';
+                return;
+            }
+            el.innerHTML = certs.map((c, i) => `
+                <div class="cert-editor-row">
+                    <input type="color" class="color-input" value="${c.color}"
+                        onchange="siteContent.certifications[${i}].color = this.value">
+                    <input type="text" value="${escapeHtml(c.name)}" placeholder="자격증 이름"
+                        onchange="siteContent.certifications[${i}].name = this.value">
+                    <input type="text" value="${escapeHtml(c.issuer)}" placeholder="발급기관"
+                        onchange="siteContent.certifications[${i}].issuer = this.value">
+                    <input type="text" value="${escapeHtml(c.date)}" placeholder="취득일"
+                        onchange="siteContent.certifications[${i}].date = this.value">
+                    <button class="btn btn-sm btn-danger" onclick="removeCert(${i})">삭제</button>
+                </div>
+            `).join('');
+        }
+
+        function addCert() {
+            const name = document.getElementById('new-cert-name').value.trim();
+            const issuer = document.getElementById('new-cert-issuer').value.trim();
+            const date = document.getElementById('new-cert-date').value.trim();
+            const color = document.getElementById('new-cert-color').value;
+            if (!name || !issuer || !date) return;
+            if (!siteContent.certifications) siteContent.certifications = [];
+            siteContent.certifications.push({ name, issuer, date, color });
+            renderCerts(siteContent.certifications);
+            document.getElementById('new-cert-name').value = '';
+            document.getElementById('new-cert-issuer').value = '';
+            document.getElementById('new-cert-date').value = '';
+        }
+
+        function removeCert(index) {
+            siteContent.certifications.splice(index, 1);
+            renderCerts(siteContent.certifications);
+        }
+
+        // ============ Project Tags ============
+
+        function renderProjectTags(tags) {
+            const el = document.getElementById('project-tag-list');
+            el.innerHTML = tags.map((t, i) => `
+                <span class="tag-item">
+                    ${escapeHtml(t)}
+                    <button class="tag-remove-btn" onclick="removeProjectTag(${i})" title="삭제">&times;</button>
+                </span>
+            `).join('');
+        }
+
+        function addProjectTag() {
+            const input = document.getElementById('new-project-tag');
+            const val = input.value.trim();
+            if (!val) return;
+            siteContent.featured_project.tech_tags.push(val);
+            renderProjectTags(siteContent.featured_project.tech_tags);
+            input.value = '';
+        }
+
+        function removeProjectTag(index) {
+            siteContent.featured_project.tech_tags.splice(index, 1);
+            renderProjectTags(siteContent.featured_project.tech_tags);
+        }
+
+        document.getElementById('new-project-tag').addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); addProjectTag(); }
+        });
+
+        // ============ Save Helpers ============
+
+        async function putSiteContent() {
+            const res = await fetch(`${API_BASE}/admin/site-content`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(siteContent)
+            });
+            if (res.status === 401) {
+                localStorage.removeItem('admin_token');
+                window.location.href = '/admin/login.html';
+                throw new Error('Unauthorized');
+            }
+            if (!res.ok) throw new Error('Save failed');
+            siteContent = await res.json();
+        }
+
+        function showToast(id) {
+            const el = document.getElementById(id);
+            el.classList.add('visible');
+            setTimeout(() => el.classList.remove('visible'), 2500);
+        }
+
+        // ============ Section Save Functions ============
+
+        async function saveProfile() {
+            siteContent.profile.name = document.getElementById('profile-name').value;
+            siteContent.profile.role = document.getElementById('profile-role').value;
+            siteContent.profile.bio = document.getElementById('profile-bio').value;
+            siteContent.profile.avatar_url = document.getElementById('profile-avatar').value;
+            try { await putSiteContent(); showToast('toast-profile'); }
+            catch (e) { alert('저장 실패: ' + e.message); }
+        }
+
+        async function saveTechStack() {
+            try { await putSiteContent(); showToast('toast-tech'); }
+            catch (e) { alert('저장 실패: ' + e.message); }
+        }
+
+        async function saveCerts() {
+            try { await putSiteContent(); showToast('toast-certs'); }
+            catch (e) { alert('저장 실패: ' + e.message); }
+        }
+
+        async function saveProject() {
+            siteContent.featured_project.badge = document.getElementById('project-badge').value;
+            siteContent.featured_project.title = document.getElementById('project-title').value;
+            siteContent.featured_project.description = document.getElementById('project-description').value;
+            siteContent.featured_project.demo_link = document.getElementById('project-demo-link').value;
+            try { await putSiteContent(); showToast('toast-project'); }
+            catch (e) { alert('저장 실패: ' + e.message); }
+        }
+
+        async function saveSiteInfo() {
+            siteContent.site.title = document.getElementById('site-title').value;
+            siteContent.site.subtitle = document.getElementById('site-subtitle').value;
+            siteContent.footer.copyright = document.getElementById('footer-copyright').value;
+            try { await putSiteContent(); showToast('toast-site'); }
+            catch (e) { alert('저장 실패: ' + e.message); }
+        }
+
+        // ============ Logout ============
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_token_expires');
+            window.location.href = '/admin/login.html';
+        });
+
+        // ============ Utils ============
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

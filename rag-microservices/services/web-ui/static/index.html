@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/rag/">
+    <title>RAG 문서 질의응답 시스템</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 메인 컨테이너 -->
+    <div class="app-container">
+        <!-- 사이드바 -->
+        <aside class="sidebar">
+            <!-- 네비게이션 -->
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="prepare">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">문서 준비</span>
+                </button>
+                <button class="nav-item" data-tab="chat">
+                    <span class="nav-icon">💬</span>
+                    <span class="nav-text">질의응답</span>
+                    <span class="nav-badge" id="active-docs-badge" style="display: none;">0</span>
+                </button>
+                <button class="nav-item" data-tab="manage">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-text">문서 관리</span>
+                    <span class="nav-badge" id="total-docs-badge" style="display: none;">0</span>
+                </button>
+            </nav>
+
+            <!-- 사용 방법 버튼 -->
+            <div class="sidebar-help">
+                <button class="nav-item help-btn" onclick="showTutorialModal()">
+                    <span class="nav-icon">?</span>
+                    <span class="nav-text">사용 방법</span>
+                </button>
+                <a href="/" class="nav-item back-to-portfolio-btn">
+                    <span class="nav-icon">←</span>
+                    <span class="nav-text">포트폴리오</span>
+                </a>
+            </div>
+
+            <!-- 시스템 상태 -->
+            <div class="sidebar-footer">
+                <div class="system-status">
+                    <div class="status-item">
+                        <span class="status-label">LLM</span>
+                        <span id="llm-provider" class="status-value">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">상태</span>
+                        <span id="status-indicator" class="status-dot"></span>
+                        <span id="status-text" class="status-value">대기 중</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <!-- ======================
+                 탭 1: 문서 준비
+                 ====================== -->
+            <div class="tab-content active" id="tab-prepare">
+                <div class="content-wrapper">
+                    <!-- 헤더 -->
+                    <div class="content-header">
+                        <h1 class="content-title">📁 문서 준비</h1>
+                        <p class="content-subtitle">파일을 벡터DB에 저장하세요</p>
+                    </div>
+
+                    <!-- 경고 배너 -->
+                    <div class="info-banner info-banner-warning">
+                        ⚠️ 이 탭은 <strong>파일을 벡터DB에 임베딩하여 저장하는 전용 탭</strong>입니다.<br>
+                        문서 활성화는 <strong>💬 질의응답 탭</strong>에서 "활성화 문서 변경" 버튼으로 하세요.
+                    </div>
+
+                    <!-- 파일 업로드 -->
+                    <section class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">📤 파일 업로드</h2>
+                        </div>
+                        <div class="section-body">
+                            <div class="upload-zone" id="upload-area">
+                                <div class="upload-icon">📤</div>
+                                <p class="upload-title">파일을 드래그하거나 클릭하여 업로드</p>
+                                <p class="upload-hint">HTML, PDF, Excel, Word 지원</p>
+                                <input type="file" id="file-input" multiple accept=".html,.htm,.pdf,.xlsx,.xls,.docx,.doc" hidden>
+                            </div>
+
+                            <div class="upload-options">
+                                <button id="load-files-btn" class="btn btn-secondary">
+                                    <span>📋</span> 저장된 파일에서 선택
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 텍스트 직접 입력 -->
+                    <section class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">✏️ 텍스트 직접 입력</h2>
+                        </div>
+                        <div class="section-body">
+                            <div class="text-input-zone">
+                                <p class="upload-hint">텍스트를 직접 입력하여 벡터DB에 저장합니다 (의미 기준 청킹 적용)</p>
+
+                                <!-- 문서 제목 -->
+                                <div class="text-input-field">
+                                    <label for="text-doc-title">문서 제목</label>
+                                    <input type="text" id="text-doc-title"
+                                           placeholder="예: 서버 장애 대응 가이드"
+                                           maxlength="100">
+                                </div>
+
+                                <!-- 텍스트 입력 영역 -->
+                                <div class="text-input-field">
+                                    <label for="text-content">내용</label>
+                                    <textarea id="text-content"
+                                              placeholder="벡터DB에 저장할 텍스트를 입력하세요..."
+                                              rows="8"></textarea>
+                                    <div class="text-stats">
+                                        <span id="text-char-count">0자 입력됨</span>
+                                    </div>
+                                </div>
+
+                                <!-- 카테고리 선택 -->
+                                <div class="text-input-options">
+                                    <div class="option-group">
+                                        <label>카테고리:</label>
+                                        <select id="text-category">
+                                            <!-- 동적으로 로드 -->
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- 저장 버튼 -->
+                                <div class="text-input-actions">
+                                    <button id="text-save-btn" class="btn btn-primary">
+                                        <span>💾</span> 벡터DB에 저장
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 진행 상태 표시 (M-2) -->
+                    <section class="section" id="progress-section" style="display: none;">
+                        <div class="section-body">
+                            <div class="progress-container">
+                                <div class="progress-header">
+                                    <h3>📊 문서 처리 중...</h3>
+                                    <span id="progress-status">0 / 0</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" id="process-progress-bar">
+                                        <span id="progress-percent">0%</span>
+                                    </div>
+                                </div>
+                                <div id="progress-details" class="progress-details">
+                                    <span id="progress-current-file">준비 중...</span>
+                                    <span id="progress-time-estimate"></span>
+                                </div>
+                                <div id="progress-log" class="progress-log"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 선택된 파일 목록 -->
+                    <section class="section" id="files-section" style="display: none;">
+                        <div class="section-header">
+                            <h2 class="section-title">📋 선택된 파일</h2>
+                            <div class="section-actions">
+                                <button id="select-all-btn" class="btn-text">모두 선택</button>
+                                <button id="clear-all-btn" class="btn-text text-danger">모두 제거</button>
+                            </div>
+                        </div>
+                        <div class="section-body">
+                            <div id="file-list" class="file-list"></div>
+
+                            <div class="process-action">
+                                <button id="process-btn" class="btn btn-primary btn-large">
+                                    <span>💾</span> 벡터DB에 저장하기
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 저장 완료 상태 -->
+                    <section class="section" id="status-section" style="display: none;">
+                        <div class="status-card status-card-success">
+                            <div class="status-icon">✅</div>
+                            <div class="status-info">
+                                <h3>벡터DB 저장 완료!</h3>
+                                <ul class="status-list">
+                                    <li id="status-processed">저장된 파일: <strong>0개</strong></li>
+                                    <li id="status-chunks">생성된 청크: <strong>0개</strong></li>
+                                </ul>
+                                <div class="status-actions">
+                                    <button class="btn btn-secondary" onclick="location.reload()">
+                                        <span>➕</span> 추가 파일 업로드
+                                    </button>
+                                    <button class="btn btn-primary" onclick="switchTab('manage')">
+                                        <span>📚</span> 문서 관리로 이동
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- ======================
+                 탭 2: 질의응답
+                 ====================== -->
+            <div class="tab-content" id="tab-chat">
+                <div class="chat-container">
+                    <!-- 활성 문서 바 -->
+                    <div class="active-docs-bar" id="active-docs-bar">
+                        <div class="active-docs-info" id="active-docs-info-clickable" style="cursor: pointer;" onclick="showActiveDocumentsModal()" title="클릭하여 활성화된 문서 목록 보기">
+                            <span class="active-docs-icon">📚</span>
+                            <span id="active-docs-text">활성화된 문서가 없습니다</span>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <button class="btn btn-secondary btn-change-docs" onclick="openDocumentSelector()">
+                                <span>🔄</span> 활성화 문서 변경
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 채팅 영역 -->
+                    <div class="chat-messages" id="chat-history">
+                        <div class="welcome-message">
+                            <div class="welcome-icon">👋</div>
+                            <h2>안녕하세요!</h2>
+                            <p>문서를 기반으로 질문에 답변해드립니다.</p>
+                            <p class="welcome-hint">먼저 <strong>"활성화 문서 변경"</strong> 버튼으로 문서를 활성화해주세요.</p>
+                        </div>
+                    </div>
+
+                    <!-- 입력 영역 -->
+                    <div class="chat-input-container">
+                        <div class="chat-actions-bar">
+                            <button class="btn-text" onclick="clearChatHistory()" title="대화 내역을 모두 지웁니다">
+                                🗑️ 대화 초기화
+                            </button>
+                        </div>
+                        <div class="chat-input-wrapper">
+                            <textarea
+                                id="question-input"
+                                class="chat-input"
+                                placeholder="문서에 대해 질문하세요..."
+                                rows="1"
+                                disabled
+                            ></textarea>
+                            <button id="ask-btn" class="btn-send" disabled>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="chat-input-hint">
+                            <span>Shift + Enter로 줄바꿈</span>
+                            <span>•</span>
+                            <span>Enter로 전송</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================
+                 탭 3: 문서 관리
+                 ====================== -->
+            <div class="tab-content" id="tab-manage">
+                <div class="content-wrapper">
+                    <!-- 헤더 -->
+                    <div class="content-header">
+                        <h1 class="content-title">📚 문서 관리</h1>
+                        <p class="content-subtitle">벡터DB에 저장된 문서를 확인하고 관리하세요</p>
+                    </div>
+
+                    <!-- 벡터DB 문서 라이브러리 -->
+                    <section class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">📦 벡터DB 문서 라이브러리</h2>
+                            <div class="section-actions">
+                                <button id="refresh-docs-btn" class="btn btn-secondary">
+                                    <span>🔄</span> 새로고침
+                                </button>
+                                <button id="delete-all-docs-btn" class="btn btn-danger" style="display: none;">
+                                    <span>🗑️</span> 전체 삭제
+                                </button>
+                            </div>
+                        </div>
+                        <div class="section-body">
+                            <div class="info-banner">
+                                💡 벡터DB에 저장된 모든 문서 목록입니다. 문서를 활성화하려면 <strong>💬 질의응답 탭</strong>에서 <strong>🔄 활성화 문서 변경</strong> 버튼을 클릭하세요.
+                            </div>
+
+                            <!-- 브레드크럼 네비게이션 + 새 폴더 버튼 -->
+                            <div class="folder-breadcrumb-bar">
+                                <div id="folder-breadcrumb" class="folder-breadcrumb">
+                                    <span class="breadcrumb-item active" data-folder-id="">📍 전체 문서</span>
+                                </div>
+                                <button id="new-folder-btn" class="btn btn-secondary btn-sm">
+                                    <span>📁+</span> 새 폴더
+                                </button>
+                            </div>
+
+                            <!-- 검색바 -->
+                            <div class="search-bar">
+                                <input type="text" id="manage-doc-search" class="search-input" placeholder="문서 검색...">
+                                <select id="manage-category-filter" class="category-filter-select">
+                                    <option value="">전체 카테고리</option>
+                                </select>
+                            </div>
+
+                            <!-- 통합 문서/폴더 리스트 -->
+                            <div id="docs-list" class="docs-table">
+                                <div class="empty-state">
+                                    <div class="empty-icon">📭</div>
+                                    <p>벡터DB에 저장된 문서가 없습니다</p>
+                                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                                        📁 문서 준비 탭에서 파일을 업로드하고 벡터DB에 저장하세요
+                                    </p>
+                                    <button class="btn btn-primary" onclick="switchTab('prepare')">
+                                        문서 추가하기 →
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 통계 -->
+                    <section class="section">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon">📄</div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="stat-total-docs">0</div>
+                                    <div class="stat-label">전체 문서</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">✂️</div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="stat-total-chunks">0</div>
+                                    <div class="stat-label">총 청크</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">📂</div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="stat-categories">0</div>
+                                    <div class="stat-label">카테고리</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 로딩 오버레이 -->
+    <div id="loading" class="loading-overlay" style="display:none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loading-text">처리 중...</p>
+        </div>
+    </div>
+
+    <!-- 문서 선택 모달 -->
+    <div id="document-selector-modal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeDocumentSelector()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📚 활성화 문서 선택</h2>
+                <button class="modal-close" onclick="closeDocumentSelector()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- 브레드크럼 네비게이션 -->
+                <div class="modal-folder-nav">
+                    <div id="modal-folder-breadcrumb" class="modal-breadcrumb">
+                        <span class="breadcrumb-item active" data-folder-id="">📍 전체 문서</span>
+                    </div>
+                </div>
+                <div class="modal-search">
+                    <input type="text" id="modal-doc-search" class="search-input" placeholder="문서 검색...">
+                    <div class="modal-search-actions">
+                        <button id="modal-select-all" class="btn-text">전체 선택</button>
+                        <button id="modal-clear-all" class="btn-text">선택 해제</button>
+                    </div>
+                </div>
+                <div id="modal-docs-list" class="modal-docs-list">
+                    <div class="modal-loading">
+                        <div class="spinner"></div>
+                        <p>문서 목록 로딩 중...</p>
+                    </div>
+                </div>
+                <div class="modal-selected-info">
+                    선택된 문서: <strong id="modal-selected-count">0</strong>개
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDocumentSelector()">취소</button>
+                <button id="modal-activate-btn" class="btn btn-primary">✓ 선택한 문서 활성화</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 활성화된 문서 목록 모달 -->
+    <div id="active-documents-modal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeActiveDocumentsModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📚 현재 활성화된 문서</h2>
+                <button class="modal-close" onclick="closeActiveDocumentsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="active-docs-modal-list" class="active-docs-list">
+                    <!-- 동적으로 채워짐 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeActiveDocumentsModal()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 튜토리얼 모달 -->
+    <div id="tutorial-modal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeTutorialModal()"></div>
+        <div class="modal-content tutorial-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">RAG 문서 질의응답 시스템 사용 가이드</h2>
+                <button class="modal-close" onclick="closeTutorialModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- 슬라이드 컨테이너 -->
+                <div class="tutorial-slides">
+                    <!-- 슬라이드 1: 환영 & 시스템 소개 -->
+                    <div class="tutorial-slide active" data-slide="0">
+                        <div class="tutorial-slide-content">
+                            <div class="tutorial-slide-icon">📚</div>
+                            <h3 class="tutorial-slide-title">RAG 문서 질의응답 시스템에 오신 것을 환영합니다</h3>
+                            <div class="tutorial-slide-description">
+                                <ul class="tutorial-detail-list">
+                                    <li>업로드한 문서를 AI가 분석하여 질문에 답변해드립니다</li>
+                                    <li>왼쪽 사이드바의 <strong>3개 탭</strong>으로 구성됩니다:
+                                        <br>📁 문서 준비 → 💬 질의응답 → 📚 문서 관리</li>
+                                </ul>
+                                <div class="tutorial-highlight">
+                                    💡 PDF, Word, Excel, HTML 파일 또는 직접 텍스트 입력으로 문서를 등록할 수 있습니다
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 슬라이드 2: 문서 준비 - 파일 업로드 -->
+                    <div class="tutorial-slide" data-slide="1">
+                        <div class="tutorial-slide-content">
+                            <div class="tutorial-slide-icon">📤</div>
+                            <h3 class="tutorial-slide-title">STEP 1-1. 파일 업로드</h3>
+                            <div class="tutorial-slide-description">
+                                <ul class="tutorial-detail-list">
+                                    <li><strong>드래그 앤 드롭</strong>으로 파일을 업로드할 수 있습니다</li>
+                                    <li>지원 형식: <strong>PDF, HTML, Word(.docx), Excel(.xlsx)</strong></li>
+                                    <li>"📋 저장된 파일에서 선택" 버튼으로 서버에 있는 파일도 선택 가능</li>
+                                </ul>
+                                <div class="tutorial-highlight">
+                                    💡 업로드된 파일은 자동으로 텍스트 추출 → 청킹 → 임베딩되어 벡터DB에 저장됩니다
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 슬라이드 3: 문서 준비 - 텍스트 직접 입력 -->
+                    <div class="tutorial-slide" data-slide="2">
+                        <div class="tutorial-slide-content">
+                            <div class="tutorial-slide-icon">✏️</div>
+                            <h3 class="tutorial-slide-title">STEP 1-2. 텍스트 직접 입력</h3>
+                            <div class="tutorial-slide-description">
+                                <ul class="tutorial-detail-list">
+                                    <li><strong>문서 제목</strong>과 <strong>내용</strong>을 직접 입력할 수 있습니다</li>
+                                    <li>파일이 없어도 텍스트만으로 지식베이스 구축 가능</li>
+                                    <li><strong>카테고리</strong>를 선택하여 문서를 분류할 수 있습니다</li>
+                                </ul>
+                                <div class="tutorial-highlight">
+                                    💡 내부 가이드, 메모, FAQ 등을 직접 입력하여 활용하세요
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 슬라이드 4: 질의응답 - 문서 활성화 -->
+                    <div class="tutorial-slide" data-slide="3">
+                        <div class="tutorial-slide-content">
+                            <div class="tutorial-slide-icon">🔄</div>
+                            <h3 class="tutorial-slide-title">STEP 2-1. 검색 대상 문서 활성화</h3>
+                            <div class="tutorial-slide-description">
+                                <ul class="tutorial-detail-list">
+                                    <li><strong>"💬 질의응답"</strong> 탭으로 이동합니다</li>
+                                    <li><strong>"🔄 활성화 문서 변경"</strong> 버튼을 클릭합니다</li>
+                                    <li>검색에 포함할 <strong>문서/폴더를 선택</strong> 후 "선택 완료"</li>
+                                </ul>
+                                <div class="tutorial-highlight">
+                                    💡 특정 주제 관련 질문이면 해당 문서만 활성화하면 더 정확한 답변을 받습니다
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 슬라이드 5: 질의응답 - 질문하기 -->
+                    <div class="tutorial-slide" data-slide="4">
+                        <div class="tutorial-slide-content">
+                            <div class="tutorial-slide-icon">💬</div>
+                            <h3 class="tutorial-slide-title">STEP 2-2. 질문하고 답변받기</h3>
+                            <div class="tutorial-slide-description">
+                                <ul class="tutorial-detail-list">
+                                    <li><strong>구체적인 키워드</strong>를 포함하여 질문하세요</li>
+                                    <li>한 번에 <strong>하나의 질문</strong>만 하면 더 정확한 답변을 받습니다</li>
+                                    <li>"~하는 방법", "~이란?", "~차이점" 등 <strong>명확한 형식</strong>으로 질문하세요</li>
+                                </ul>
+                                <div class="tutorial-highlight">
+                                    💡 <strong>좋은 질문 예시:</strong> "Kubernetes Pod 생성 방법", "Docker와 컨테이너의 차이점"<br>
+                                    📚 답변 하단의 <strong>참조 문서</strong>를 클릭하면 원본 출처를 확인할 수 있습니다
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 슬라이드 6: 문서 관리 -->
+                    <div class="tutorial-slide" data-slide="5">
+                        <div class="tutorial-slide-content">
+                            <div class="tutorial-slide-icon">📚</div>
+                            <h3 class="tutorial-slide-title">STEP 3. 문서 관리</h3>
+                            <div class="tutorial-slide-description">
+                                <ul class="tutorial-detail-list">
+                                    <li><strong>"📚 문서 관리"</strong> 탭에서 등록된 문서를 확인합니다</li>
+                                    <li><strong>폴더를 생성</strong>하여 문서를 분류할 수 있습니다</li>
+                                    <li>불필요한 문서는 <strong>선택 후 삭제</strong>할 수 있습니다</li>
+                                </ul>
+                                <div class="tutorial-highlight">
+                                    💡 주제별로 폴더를 만들어 정리하면 문서 활성화 시 편리합니다
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 슬라이드 7: 시작하기 -->
+                    <div class="tutorial-slide" data-slide="6">
+                        <div class="tutorial-slide-content">
+                            <div class="tutorial-slide-icon">🚀</div>
+                            <h3 class="tutorial-slide-title">준비 완료!</h3>
+                            <div class="tutorial-slide-description">
+                                <p>이제 RAG 문서 질의응답 시스템을 사용할 준비가 되었습니다.</p>
+                                <p style="margin: 1.5rem 0; font-size: 1.1rem; font-weight: 500;">
+                                    📁 문서 등록 → 🔄 문서 활성화 → 💬 질문하기
+                                </p>
+                                <p style="color: var(--text-tertiary);">
+                                    궁금한 점이 있으면 언제든 <strong>"? 사용 방법"</strong> 버튼으로<br>이 가이드를 다시 볼 수 있습니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 페이지 인디케이터 -->
+                <div class="tutorial-indicators">
+                    <span class="indicator active" data-slide="0"></span>
+                    <span class="indicator" data-slide="1"></span>
+                    <span class="indicator" data-slide="2"></span>
+                    <span class="indicator" data-slide="3"></span>
+                    <span class="indicator" data-slide="4"></span>
+                    <span class="indicator" data-slide="5"></span>
+                    <span class="indicator" data-slide="6"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="tutorial-prev-btn" class="btn btn-secondary" style="display:none;">이전</button>
+                <div style="flex:1;"></div>
+                <label class="tutorial-checkbox-label">
+                    <input type="checkbox" id="tutorial-dont-show-again"> 다시 보지 않기
+                </label>
+                <button id="tutorial-next-btn" class="btn btn-primary">다음</button>
+                <button id="tutorial-close-btn" class="btn btn-primary" style="display:none;">시작하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script type="module" src="js/app.js?v=20260120-2"></script>
+</body>
+</html>

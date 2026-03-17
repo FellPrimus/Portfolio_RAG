@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - youngmin's Cloud</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/blog.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <span class="login-icon">&#128274;</span>
+                <h1>Admin Login</h1>
+                <p>DevLog 관리자 로그인</p>
+            </div>
+
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter admin password"
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <div id="error-message" class="error-message" style="display: none;"></div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    Login
+                </button>
+            </form>
+
+            <a href="/devlog" class="back-link">&larr; Back to DevLog</a>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/devlog/api';
+
+        // Check if already logged in
+        const token = localStorage.getItem('admin_token');
+        if (token) {
+            verifyToken(token);
+        }
+
+        async function verifyToken(token) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/verify`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (response.ok) {
+                    window.location.href = '/admin/';
+                }
+            } catch (e) {
+                localStorage.removeItem('admin_token');
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('error-message');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+            errorEl.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password })
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Login failed');
+                }
+
+                const data = await response.json();
+                localStorage.setItem('admin_token', data.token);
+                localStorage.setItem('admin_token_expires', data.expires_at);
+
+                window.location.href = '/admin/';
+
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login';
+            }
+        });
+    </script>
+</body>
+</html>

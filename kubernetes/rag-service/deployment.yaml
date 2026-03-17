@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-service
+  namespace: portfolio
+  labels:
+    app: rag-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rag-service
+  template:
+    metadata:
+      labels:
+        app: rag-service
+    spec:
+      containers:
+        - name: rag-service
+          image: rag-service:v1.0.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: rag-service-config
+            - secretRef:
+                name: rag-service-secret
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "6Gi"
+              cpu: "2000m"
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: uploads
+              mountPath: /app/uploads
+            - name: html
+              mountPath: /app/html
+          livenessProbe:
+            httpGet:
+              path: /api/status
+              port: 5000
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/status
+              port: 5000
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: rag-service-data
+        - name: uploads
+          emptyDir: {}
+        - name: html
+          emptyDir: {}

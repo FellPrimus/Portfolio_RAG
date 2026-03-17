@@ -1,0 +1,57 @@
+# LangChain packages (pinned compatible versions for Python 3.11)
+langchain==0.3.7
+langchain-core==0.3.19
+langchain-community==0.3.7
+langchain-text-splitters==0.3.2
+langchain-anthropic==0.3.0
+langchain-openai==0.2.9
+langgraph==0.2.53
+tavily-python==0.5.0
+
+# Vector stores
+chromadb==0.4.22
+faiss-cpu==1.8.0
+
+# Local embeddings
+sentence-transformers==2.2.2
+torch==2.1.2
+transformers==4.35.0
+
+# Document loaders and parsers
+beautifulsoup4==4.12.3
+requests==2.31.0
+html2text==2020.1.16
+
+# Web crawling
+playwright==1.40.0
+
+# PDF processing
+pypdf==4.0.0
+pdfplumber==0.10.3
+
+# Excel processing
+pandas==2.0.3
+openpyxl==3.1.2
+xlrd==2.0.1
+
+# Word processing
+python-docx==1.1.0
+
+# Utilities
+python-dotenv==1.0.0
+pydantic-settings>=2.1.0
+tiktoken>=0.7.0
+
+# Web application
+flask==3.0.0
+waitress==3.0.0
+
+# NumPy (compatible with torch 2.1)
+numpy==1.26.2
+
+# RAG enhancement
+tenacity>=8.2.0
+rank-bm25==0.2.2
+
+# Korean NLP
+konlpy>=0.6.0

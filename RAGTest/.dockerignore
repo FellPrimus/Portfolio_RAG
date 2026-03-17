@@ -1,0 +1,86 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+venv_py313/
+ENV/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+app.log
+server*.log
+crawl_output.log
+
+# Temporary files
+*.tmp
+*.temp
+nul
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Claude/Vooster config (development only)
+.claude/
+.vooster/
+.playwright-mcp/
+
+# Debug files
+debug_*.py
+check_*.py
+find_*.py
+test_*.py
+*_check.json
+
+# Large binary files (rebuild in container)
+*.pkl
+*.pickle
+
+# Documentation (optional)
+vooster-docs/
+
+# Backup files
+*.bak
+*.backup
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">youngmin's Cloud - DevOps & Cloud Engineering Blog</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/blog.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="blog-header">
+        <div class="header-container">
+            <a href="/" class="blog-logo">
+                <span class="logo-icon">&#9729;</span>
+                <span class="logo-text" id="site-title">youngmin's Cloud</span>
+            </a>
+            <nav class="blog-nav">
+                <a href="/" class="nav-link active">Home</a>
+                <a href="/devlog" class="nav-link">DevLog</a>
+                <a href="#projects" class="nav-link">Projects</a>
+                <a href="#monitoring" class="nav-link">Monitoring</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="blog-layout">
+        <!-- Sidebar -->
+        <aside class="blog-sidebar">
+            <!-- Profile Card -->
+            <div class="sidebar-card profile-card" id="profile-card">
+                <div class="profile-avatar">
+                    <img src="/assets/images/증명.jpg" alt="Profile" class="avatar-image" id="profile-avatar">
+                </div>
+                <h2 class="profile-name" id="profile-name">Youngmin</h2>
+                <p class="profile-role" id="profile-role">DevOps / SRE Engineer</p>
+                <p class="profile-bio" id="profile-bio">
+                    Kubernetes, CI/CD, Infrastructure as Code 전문.
+                    안정적인 서비스 운영과 개발 생산성 향상에 관심이 많습니다.
+                </p>
+                <div class="profile-blog-links" id="profile-blog-links"></div>
+            </div>
+
+            <!-- Certifications Card -->
+            <div class="sidebar-card" id="cert-card" style="display:none;">
+                <h3 class="sidebar-title">Certifications</h3>
+                <ul class="cert-list" id="cert-list"></ul>
+            </div>
+
+            <!-- Tech Stack Card -->
+            <div class="sidebar-card">
+                <h3 class="sidebar-title">Tech Stack</h3>
+                <div class="tech-tags" id="tech-tags">
+                    <span class="tech-tag">Kubernetes</span>
+                    <span class="tech-tag">Docker</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="blog-main">
+            <!-- Recent Posts Section -->
+            <section class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">Recent Posts</h2>
+                    <a href="/devlog" class="see-all-link">View All &rarr;</a>
+                </div>
+                <div class="posts-grid" id="recent-posts">
+                    <!-- Posts will be loaded dynamically -->
+                    <div class="loading-placeholder">
+                        <p>Loading posts...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Featured Project Section -->
+            <section id="projects" class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">Featured Project</h2>
+                </div>
+                <div class="featured-project">
+                    <div class="project-badge" id="project-badge">Live Demo</div>
+                    <div class="project-content">
+                        <h3 class="project-title" id="project-title">RAG 기반 AI 질의응답 시스템</h3>
+                        <p class="project-description" id="project-description">
+                            K3s Kubernetes 환경에서 마이크로서비스로 운영되는 RAG(Retrieval-Augmented Generation) 시스템입니다.
+                        </p>
+                        <div class="project-tech" id="project-tech">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">FastAPI</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="/rag" class="btn btn-primary" id="project-demo-link">
+                                <span>&#9654;</span> Live Demo
+                            </a>
+                        </div>
+                    </div>
+                    <div class="project-architecture">
+                        <div class="arch-diagram">
+                            <div class="arch-layer">
+                                <div class="arch-box gateway">Gateway API</div>
+                            </div>
+                            <div class="arch-arrow">&darr;</div>
+                            <div class="arch-layer services">
+                                <div class="arch-box">web-ui</div>
+                                <div class="arch-box">rag-api</div>
+                            </div>
+                            <div class="arch-arrow">&darr;</div>
+                            <div class="arch-layer services">
+                                <div class="arch-box">embedding</div>
+                                <div class="arch-box">llm-gateway</div>
+                            </div>
+                            <div class="arch-arrow">&darr;</div>
+                            <div class="arch-layer data">
+                                <div class="arch-box">Qdrant</div>
+                                <div class="arch-box">Redis</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Monitoring Section -->
+            <section id="monitoring" class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">Live Monitoring</h2>
+                </div>
+                <div class="monitoring-card">
+                    <div class="monitoring-icon">&#128200;</div>
+                    <div class="monitoring-content">
+                        <h3 class="monitoring-title">Kubernetes Cluster Monitoring</h3>
+                        <p class="monitoring-desc">
+                            kube-prometheus-stack으로 수집된 클러스터 메트릭을 Grafana 대시보드에서 실시간으로 확인할 수 있습니다.
+                            Pod CPU/Memory, 네트워크 트래픽, 노드 상태 등을 시각화합니다.
+                        </p>
+                        <div class="monitoring-badges">
+                            <span class="monitoring-badge">Prometheus</span>
+                            <span class="monitoring-badge">Grafana</span>
+                            <span class="monitoring-badge">node-exporter</span>
+                            <span class="monitoring-badge">kube-state-metrics</span>
+                        </div>
+                        <div class="monitoring-links">
+                            <a href="/grafana" class="btn btn-monitor" target="_blank" rel="noopener noreferrer">
+                                <span>&#128200;</span> Grafana 대시보드 열기
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="blog-footer">
+        <div class="footer-container">
+            <p class="footer-copyright" id="footer-copyright">&copy; 2025 youngmin's Cloud. Powered by Kubernetes.</p>
+            <div class="footer-links">
+                <a href="/admin/login.html">Admin</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function applySiteContent(sc) {
+            // Profile
+            document.getElementById('profile-name').textContent = sc.profile.name;
+            document.getElementById('profile-role').textContent = sc.profile.role;
+            document.getElementById('profile-bio').textContent = sc.profile.bio;
+
+            // Blog links
+            const blogLinksEl = document.getElementById('profile-blog-links');
+            if (blogLinksEl && sc.profile.blog_links && sc.profile.blog_links.length > 0) {
+                blogLinksEl.innerHTML = sc.profile.blog_links.map(link =>
+                    `<a href="${escapeHtml(link.url)}" class="profile-blog-link" target="_blank" rel="noopener noreferrer">
+                        <span class="blog-link-icon">&#9998;</span> ${escapeHtml(link.title)}
+                    </a>`
+                ).join('');
+            }
+            const avatar = document.getElementById('profile-avatar');
+            avatar.src = sc.profile.avatar_url;
+            avatar.alt = sc.profile.name;
+
+            // Site title
+            const titleEl = document.getElementById('site-title');
+            if (titleEl) titleEl.textContent = sc.site.title;
+            document.getElementById('page-title').textContent =
+                sc.site.title + ' - ' + sc.site.subtitle;
+
+            // Tech Stack
+            const techEl = document.getElementById('tech-tags');
+            techEl.innerHTML = sc.tech_stack.map(t =>
+                `<span class="tech-tag">${escapeHtml(t)}</span>`
+            ).join('');
+
+            // Featured Project
+            document.getElementById('project-badge').textContent = sc.featured_project.badge;
+            document.getElementById('project-title').textContent = sc.featured_project.title;
+            document.getElementById('project-description').textContent = sc.featured_project.description;
+            document.getElementById('project-tech').innerHTML = sc.featured_project.tech_tags.map(t =>
+                `<span class="tech-tag">${escapeHtml(t)}</span>`
+            ).join('');
+            const demoLink = document.getElementById('project-demo-link');
+            demoLink.href = sc.featured_project.demo_link;
+            demoLink.innerHTML = `<span>&#9654;</span> ${escapeHtml(sc.featured_project.badge)}`;
+
+            // Footer
+            document.getElementById('footer-copyright').textContent = sc.footer.copyright;
+
+            // Certifications
+            const certCard = document.getElementById('cert-card');
+            const certList = document.getElementById('cert-list');
+            if (sc.certifications && sc.certifications.length > 0) {
+                certList.innerHTML = sc.certifications.map(c => `
+                    <li class="cert-item">
+                        <span class="cert-dot" style="color: ${escapeHtml(c.color)};">&#9679;</span>
+                        <div class="cert-info">
+                            <span class="cert-name">${escapeHtml(c.name)}</span>
+                            <span class="cert-meta">${escapeHtml(c.issuer)} · ${escapeHtml(c.date)}</span>
+                        </div>
+                    </li>
+                `).join('');
+                certCard.style.display = '';
+            } else {
+                certCard.style.display = 'none';
+            }
+        }
+
+        async function loadPosts() {
+            const container = document.getElementById('recent-posts');
+            try {
+                const response = await fetch('/devlog/api/posts');
+                if (!response.ok) throw new Error('Failed to load posts');
+                const posts = await response.json();
+
+                const countEl = document.getElementById('devlog-count');
+                if (countEl) countEl.textContent = posts.length;
+
+                if (posts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-posts">
+                            <p>아직 작성된 글이 없습니다.</p>
+                            <a href="/devlog" class="btn btn-outline">DevLog 바로가기</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const recentPosts = posts.slice(0, 3);
+                container.innerHTML = recentPosts.map(post => `
+                    <article class="post-card" onclick="location.href='/devlog?post=${post.id}'">
+                        <div class="post-card-header">
+                            <span class="post-number">#${post.id}</span>
+                        </div>
+                        <h3 class="post-card-title">${escapeHtml(post.title)}</h3>
+                        <p class="post-card-excerpt">${escapeHtml(post.excerpt)}</p>
+                        <div class="post-card-tags">
+                            ${post.tags.slice(0, 3).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                        </div>
+                    </article>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                container.innerHTML = `<div class="empty-posts"><p>포스트를 불러올 수 없습니다.</p></div>`;
+            }
+        }
+
+        async function loadSiteContent() {
+            try {
+                const response = await fetch('/devlog/api/site-content');
+                if (!response.ok) throw new Error('Failed to load site content');
+                const sc = await response.json();
+                applySiteContent(sc);
+            } catch (error) {
+                console.error('Error loading site content:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load in parallel
+            loadSiteContent();
+            loadPosts();
+        });
+    </script>
+</body>
+</html>

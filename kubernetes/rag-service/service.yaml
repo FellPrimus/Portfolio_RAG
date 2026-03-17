@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-service
+  namespace: portfolio
+  labels:
+    app: rag-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5000
+      targetPort: 5000
+      protocol: TCP
+      name: http
+  selector:
+    app: rag-service

@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  # Infrastructure
+  redis:
+    image: redis:7-alpine
+    container_name: rag-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.4
+    container_name: rag-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Services
+  embedding-service:
+    build: ./services/embedding-service
+    container_name: rag-embedding
+    ports:
+      - "8001:8001"
+    environment:
+      - LOG_LEVEL=INFO
+      - EMBEDDING_MODEL=intfloat/multilingual-e5-large
+    volumes:
+      - model-cache:/model-cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/livez"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
+  llm-gateway:
+    build: ./services/llm-gateway
+    container_name: rag-llm-gateway
+    ports:
+      - "8002:8002"
+    environment:
+      - LOG_LEVEL=INFO
+      - LLM_MODEL=HCX-007
+      - LLM_TEMPERATURE=0.5
+      - LLM_MAX_TOKENS=4096
+      - CLOVASTUDIO_API_KEY=${CLOVASTUDIO_API_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/livez"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rag-api:
+    build: ./services/rag-api
+    container_name: rag-api
+    ports:
+      - "8000:8000"
+    environment:
+      - LOG_LEVEL=INFO
+      - EMBEDDING_SERVICE_URL=http://embedding-service:8001
+      - LLM_GATEWAY_URL=http://llm-gateway:8002
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - QDRANT_COLLECTION=documents
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - RAG_RETRIEVAL_K=5
+      - RAG_MIN_QUALITY_SCORE=0.6
+      - EMBEDDING_DIMENSION=1024
+    depends_on:
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      embedding-service:
+        condition: service_healthy
+      llm-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/livez"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web-ui:
+    build: ./services/web-ui
+    container_name: rag-web-ui
+    ports:
+      - "80:80"
+    depends_on:
+      rag-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis-data:
+  qdrant-data:
+  model-cache:

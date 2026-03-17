@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - youngmin's Cloud</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/blog.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="container admin-header-content">
+            <div class="admin-header-left">
+                <h1 class="admin-title">DevLog Admin</h1>
+                <nav class="admin-nav-tabs">
+                    <a href="/admin/" class="admin-tab active">Posts</a>
+                    <a href="/admin/site.html" class="admin-tab">Site Settings</a>
+                </nav>
+            </div>
+            <div class="admin-actions">
+                <a href="/devlog" class="btn btn-outline btn-sm">View Site</a>
+                <button id="logout-btn" class="btn btn-secondary btn-sm">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <div class="container">
+            <div class="admin-toolbar">
+                <h2>Posts</h2>
+                <a href="/admin/edit.html" class="btn btn-primary">+ New Post</a>
+            </div>
+
+            <div class="posts-table-container">
+                <table class="posts-table" id="posts-table">
+                    <thead>
+                        <tr>
+                            <th width="60">ID</th>
+                            <th>Title</th>
+                            <th width="100">Status</th>
+                            <th width="120">Date</th>
+                            <th width="140">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="posts-tbody">
+                        <tr>
+                            <td colspan="5" class="loading-cell">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = '/devlog/api';
+        let token = localStorage.getItem('admin_token');
+
+        // Check authentication
+        if (!token) {
+            window.location.href = '/admin/login.html';
+        }
+
+        // Verify token on load
+        verifyAndLoad();
+
+        async function verifyAndLoad() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/verify`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Unauthorized');
+                loadPosts();
+            } catch (e) {
+                localStorage.removeItem('admin_token');
+                window.location.href = '/admin/login.html';
+            }
+        }
+
+        // Load posts
+        async function loadPosts() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/posts`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load posts');
+
+                const posts = await response.json();
+                renderPosts(posts);
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('posts-tbody').innerHTML = `
+                    <tr><td colspan="5" class="error-cell">Failed to load posts</td></tr>
+                `;
+            }
+        }
+
+        // Render posts table
+        function renderPosts(posts) {
+            const tbody = document.getElementById('posts-tbody');
+
+            if (posts.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="5" class="empty-cell">No posts yet. Create your first post!</td></tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = posts.map(post => `
+                <tr>
+                    <td class="id-cell">#${post.id}</td>
+                    <td class="title-cell">
+                        <a href="/admin/edit.html?id=${post.id}">${escapeHtml(post.title)}</a>
+                    </td>
+                    <td>
+                        <span class="status-badge ${post.published ? 'published' : 'draft'}">
+                            ${post.published ? 'Published' : 'Draft'}
+                        </span>
+                    </td>
+                    <td class="date-cell">${formatDate(post.created_at)}</td>
+                    <td class="actions-cell">
+                        <a href="/admin/edit.html?id=${post.id}" class="btn btn-sm btn-outline">Edit</a>
+                        <button onclick="deletePost(${post.id})" class="btn btn-sm btn-danger">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Delete post
+        async function deletePost(postId) {
+            if (!confirm('Are you sure you want to delete this post?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/posts/${postId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to delete post');
+
+                loadPosts();
+            } catch (error) {
+                alert('Failed to delete post: ' + error.message);
+            }
+        }
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_token_expires');
+            window.location.href = '/admin/login.html';
+        });
+
+        // Utility functions
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('ko-KR');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

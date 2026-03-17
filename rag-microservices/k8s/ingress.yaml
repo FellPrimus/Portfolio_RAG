@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rag-ingress
+  namespace: rag-system
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+    - http:
+        paths:
+          # API endpoints (higher priority - more specific)
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: rag-api
+                port:
+                  number: 8000
+          # Health check
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: rag-api
+                port:
+                  number: 8000
+          # Web UI - root path (catch-all)
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web-ui
+                port:
+                  number: 80

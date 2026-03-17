@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  ragtest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ragtest:latest
+    container_name: ragtest-app
+    ports:
+      - "5000:5000"
+    volumes:
+      # Persist data directory
+      - ./data:/app/data
+      # Persist uploads
+      - ./uploads:/app/uploads
+      # Persist HTML files
+      - ./html:/app/html
+      # Environment file
+      - ./.env:/app/.env:ro
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/documents/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Optional: Development mode with hot reload
+  ragtest-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ragtest:dev
+    container_name: ragtest-dev
+    ports:
+      - "5001:5000"
+    volumes:
+      - .:/app
+      - /app/__pycache__
+      - /app/.git
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - PYTHONUNBUFFERED=1
+    profiles:
+      - dev
+    command: ["python", "-Bu", "app.py"]
+
+volumes:
+  ragtest-data:
+    driver: local

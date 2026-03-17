@@ -1,0 +1,347 @@
+/* DevLog Styles - Extends blog.css */
+
+/* Section Header for DevLog */
+.section-header {
+    margin-bottom: 32px;
+}
+
+.section-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-top: 8px;
+}
+
+/* Posts List */
+.posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Post Card - Enhanced for list view */
+.post-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px 28px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.post-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateX(4px);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.12);
+}
+
+.post-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.post-number {
+    font-size: 0.85rem;
+    color: var(--accent-primary);
+    font-weight: 600;
+    font-family: 'Fira Code', monospace;
+}
+
+.post-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.post-card-excerpt {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.post-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.post-card-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.post-card-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Empty & Loading States */
+.loading-placeholder,
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-state h3 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+/* Post Detail Section */
+.post-detail-section {
+    max-width: 100%;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+    padding: 8px 0;
+    transition: all 0.2s;
+}
+
+.back-link:hover {
+    color: var(--accent-secondary);
+    transform: translateX(-4px);
+}
+
+/* Post Article */
+.post-article {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 40px 48px;
+    border: 1px solid var(--border-color);
+}
+
+.post-header {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.post-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    line-height: 1.3;
+}
+
+.post-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.post-date {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.post-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Post Content (Markdown) */
+.post-content {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--text-primary);
+}
+
+.post-content h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 48px 0 20px;
+    color: var(--text-primary);
+}
+
+.post-content h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 40px 0 16px;
+    color: var(--text-primary);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.post-content h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 32px 0 12px;
+    color: var(--text-primary);
+}
+
+.post-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 24px 0 10px;
+    color: var(--text-primary);
+}
+
+.post-content p {
+    margin-bottom: 16px;
+}
+
+.post-content ul,
+.post-content ol {
+    margin: 16px 0;
+    padding-left: 24px;
+}
+
+.post-content li {
+    margin-bottom: 8px;
+}
+
+.post-content li > ul,
+.post-content li > ol {
+    margin: 8px 0;
+}
+
+.post-content blockquote {
+    margin: 24px 0;
+    padding: 16px 24px;
+    background: #eff6ff;
+    border-left: 4px solid var(--accent-primary);
+    border-radius: 0 8px 8px 0;
+    color: var(--text-secondary);
+}
+
+.post-content blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+.post-content code {
+    font-family: 'Fira Code', 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #be185d;
+}
+
+.post-content pre {
+    margin: 24px 0;
+    border-radius: 12px;
+    overflow-x: auto;
+}
+
+.post-content pre code {
+    display: block;
+    padding: 20px 24px;
+    background: #f6f8fa;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #24292f;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.post-content a {
+    color: var(--accent-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+}
+
+.post-content a:hover {
+    color: var(--accent-secondary);
+}
+
+.post-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin: 24px 0;
+    border: 1px solid var(--border-color);
+}
+
+.post-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 0.95rem;
+}
+
+.post-content th,
+.post-content td {
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.post-content th {
+    background: #f1f5f9;
+    font-weight: 600;
+}
+
+.post-content tr:hover {
+    background: #f8fafc;
+}
+
+.post-content hr {
+    border: none;
+    height: 1px;
+    background: var(--border-color);
+    margin: 48px 0;
+}
+
+/* Category Item Active State */
+.category-item.active {
+    background: #eff6ff;
+    color: var(--accent-primary);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .post-article {
+        padding: 32px;
+    }
+}
+
+@media (max-width: 768px) {
+    .post-article {
+        padding: 24px;
+    }
+
+    .post-title {
+        font-size: 1.5rem;
+    }
+
+    .post-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .post-content h2 {
+        font-size: 1.25rem;
+    }
+
+    .post-content h3 {
+        font-size: 1.1rem;
+    }
+
+    .post-content pre code {
+        padding: 16px;
+        font-size: 0.8rem;
+    }
+}

@@ -1,0 +1,17 @@
+---
+# Gateway - 모든 네임스페이스의 HTTPRoute를 수락
+# Traefik entrypoint 'web'은 내부적으로 port 8000 사용
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: main-gateway
+  namespace: kube-system
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: web
+      protocol: HTTP
+      port: 8000
+      allowedRoutes:
+        namespaces:
+          from: All
